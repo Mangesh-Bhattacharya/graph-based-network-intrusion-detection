@@ -69,7 +69,7 @@ All datasets contain flow-level network traffic suitable for graph construction.
 ---
 
 ## 📄 License
-[**MIT License**](https://opensource.org/licenses/MIT)
+[**MIT License**](https://github.com/Mangesh-Bhattacharya/graph-based-network-intrusion-detection/blob/main/LICENSE)
 
 ---
 

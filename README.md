@@ -22,10 +22,8 @@ We evaluate whether graph features improve intrusion detection performance.
 ---
 
 ## 📊 Datasets Used
-- **CIC-IDS-2017**  
-- **CIC-IoT-2023**  
-- **UNSW-NB15**  
-- (Optional) TON_IoT, Bot-IoT
+- **CIC-IDS-2017**
+- **Kaggle**
 
 All datasets contain flow-level network traffic suitable for graph construction.
 

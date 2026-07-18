@@ -22,10 +22,15 @@ We evaluate whether graph features improve intrusion detection performance.
 ---
 
 ## 📊 Datasets Used
+<<<<<<< HEAD
 - **CIC-IDS-2017**  
 - **CIC-IoT-2023**  
 - **UNSW-NB15**  
 - (Optional) TON_IoT, Bot-IoT
+=======
+- **CIC-IDS-2017**
+- **Kaggle**
+>>>>>>> 7fe0b6a578b6776aebfb959e358c445de1801448
 
 All datasets contain flow-level network traffic suitable for graph construction.
 
@@ -73,6 +78,7 @@ All datasets contain flow-level network traffic suitable for graph construction.
 
 ---
 
+<<<<<<< HEAD
 ## 📂 Repository Structure
 
 ```
@@ -117,3 +123,6 @@ GCN, GraphSAGE, GAT) of the Methods above are not yet implemented - the
 current code covers Graph Construction and the non-embedding half of
 Feature Extraction, with an emphasis on results that are easy to read and
 easy to double-check.
+=======
+## 📂 Repository Structure (in-progress)
+>>>>>>> 7fe0b6a578b6776aebfb959e358c445de1801448

@@ -103,9 +103,11 @@ graph-based-network-intrusion-detection/
 
 **Why two notebooks instead of one.**
 
-The loading code from the two data sources are distinct; the code that loads from a (pre-built) .graphml file (load_kaggle_graph.py) is different from the code for loading from a kaggle dataset;
-This keeps the notebooks focused on a single set of real, verified numbers and a single dataset, as the above file, graph_construction.py, builds a graph from raw data in the `.csv` flow logs and answers a series of questions, a reader is not left wondering what data a given graph came from. It has a real, since-fix bug, too—the first 200 rows of the DDoS file are benign (and they have to be) because it's stored in chronological order, so the first 200 rows of the DDoS file didn't 'attack' in the first 200 rows in the original combined notebook. For this Notebook we will be using a helper function called sample_labeled_flows(), with the corrected implementation located in the file ‘sample_labeled_flows.py’.
-that reads the file in ‘chunks', looking for real attack rows, anywhere they are.
+The loading code for the two data sources is intentionally different. The script that loads a pre‑built .graphml file (``load_kaggle_graph.py``) is not the same as the code that loads raw flow logs from a Kaggle dataset. This separation keeps each notebook focused on one dataset and one set of verified numbers. The graph_construction.py file builds a graph directly from the .csv flow logs and answers a series of questions based on that graph, so a reader never has to wonder which dataset produced the results.
+
+There is also a real, previously fixed bug worth noting. The first 200 rows of the DDoS file are benign because the file is stored in chronological order. In the original combined notebook, the first 200 rows were sampled as if they contained attacks, which meant the notebook never actually saw any attack traffic in that portion of the file.
+
+For this notebook, we use a helper function called ``sample_labeled_flows()``, with the corrected implementation in ``sample_labeled_flows.py``. It reads the file in chunks and searches for genuine attack rows wherever they appear, so the sample reflects real labeled traffic instead of just the earliest rows in the file.
 
 Sections 2 (Node2Vec embeddings, motif counts) and 3 (Random Forest, XGBoost,
 GCN, GraphSAGE, GAT) of the Methods above are not yet implemented the

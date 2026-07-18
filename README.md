@@ -82,6 +82,7 @@ All datasets contain flow-level network traffic suitable for graph construction.
 
 ## 📂 Repository Structure (in-progress)
 
+```
 graph-based-network-intrusion-detection/
 ├── data/
 │   ├── cic-ids-2017/GeneratedLabelledFlows/   # raw flow-log CSVs (one file per capture day)
@@ -97,6 +98,8 @@ graph-based-network-intrusion-detection/
 │   └── 01_graph_construction_and_visualization.ipynb           # retired - superseded by the two
 ├── requirements.txt
 └── README.md
+
+```
 
 **Why two notebooks instead of one.**
 

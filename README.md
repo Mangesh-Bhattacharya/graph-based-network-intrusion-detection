@@ -100,17 +100,3 @@ graph-based-network-intrusion-detection/
 └── README.md
 
 ```
-
-**Why two notebooks instead of one.**
-
-The loading code for the two data sources is intentionally different. The script that loads a pre‑built .graphml file (``load_kaggle_graph.py``) is not the same as the code that loads raw flow logs from a Kaggle dataset. This separation keeps each notebook focused on one dataset and one set of verified numbers. The graph_construction.py file builds a graph directly from the .csv flow logs and answers a series of questions based on that graph, so a reader never has to wonder which dataset produced the results.
-
-There is also a real, previously fixed bug worth noting. The first 200 rows of the DDoS file are benign because the file is stored in chronological order. In the original combined notebook, the first 200 rows were sampled as if they contained attacks, which meant the notebook never actually saw any attack traffic in that portion of the file.
-
-For this notebook, we use a helper function called ``sample_labeled_flows()``, with the corrected implementation in ``sample_labeled_flows.py``. It reads the file in chunks and searches for genuine attack rows wherever they appear, so the sample reflects real labeled traffic instead of just the earliest rows in the file.
-
-Sections 2 (Node2Vec embeddings, motif counts) and 3 (Random Forest, XGBoost,
-GCN, GraphSAGE, GAT) of the Methods above are not yet implemented the
-current code covers Graph Construction and the non-embedding half of
-Feature Extraction, with an emphasis on results that are easy to read and
-easy to double-check.

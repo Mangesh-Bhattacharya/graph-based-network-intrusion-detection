@@ -47,8 +47,10 @@ def _draw_single_graph(ax, G: nx.Graph, title: str, max_nodes: int = 40, seed: i
     nx.draw_networkx_nodes(
         G_plot, pos, ax=ax, node_size=node_sizes, node_color=node_colors, alpha=0.9
     )
-    if G_plot.number_of_nodes() <= 25:
-        nx.draw_networkx_labels(G_plot, pos, ax=ax, font_size=6)
+    # get_readable_subgraph() already caps this to max_nodes before we get here,
+    # so the subgraph being plotted is always small enough to label - no need to
+    # additionally suppress labels past some node count.
+    nx.draw_networkx_labels(G_plot, pos, ax=ax, font_size=6)
 
     subtitle = (
         f"top {G_plot.number_of_nodes()} of {full_n} nodes"

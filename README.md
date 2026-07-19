@@ -125,20 +125,42 @@ showed an attack. Notebook 2 uses a corrected `sample_labeled_flows()` helper
 real attack rows, wherever they occur.
 
 **Current status of the Methods section above.** Notebook 1
-(`01_graph_construction_and_visualization_kaggle.ipynb`) now covers all of
-Graph Construction, Graph Feature Extraction (including motif counts and
-Node2Vec embeddings), and the Random Forest / XGBoost half of Models, with
-the same "real numbers, stated scope, verification checks" standard as the
-rest of the project. Node2Vec and the Models section are deliberately scoped
-to a 962-node subgraph (all attack-touching nodes plus their immediate
-neighbors) rather than the full 41,073-node graph — the full graph's
-dominant hub makes Node2Vec's random-walk precomputation infeasible, and a
-uniform random sample would be too sparse to form a connected subgraph at
-all, since 95.8% of nodes have degree exactly 1. This is explained in
-notebook 1 itself, where it occurs. GCN, GraphSAGE, and GAT are **not**
-implemented — they require a `torch` / `torch-geometric` install that is
-fragile on Windows and adds meaningful training time, which was judged not
-worth the risk this close to the presentation deadline. Notebook 2
-(`02_graph_construction_and_visualization_ids_2017.ipynb`) covers Graph
-Construction and Graph Feature Extraction only; its samples are intentionally
-small and illustrative, not sized for model training.
+(`01_graph_construction_and_visualization_kaggle.ipynb`) now covers all
+three Methods sections: Graph Construction, Graph Feature Extraction
+(including motif counts and Node2Vec embeddings), and Models (Random
+Forest, XGBoost, GCN, GraphSAGE, GAT), with the same "real numbers, stated
+scope, verification checks" standard as the rest of the project. Node2Vec
+and every model are deliberately scoped to a 962-node subgraph (all
+attack-touching nodes plus their immediate neighbors) rather than the full
+41,073-node graph — the full graph's dominant hub makes Node2Vec's
+random-walk precomputation infeasible, and a uniform random sample would be
+too sparse to form a connected subgraph at all, since 95.8% of nodes have
+degree exactly 1. This is explained in notebook 1 itself, where it occurs.
+
+**One caveat on Section 12 (GCN/GraphSAGE/GAT) specifically:** unlike every
+other cell in this project, that section could not be execution-tested in
+the sandboxed environment used to build it — that environment's network
+policy blocks the official CPU-only PyTorch package index and instead
+resolves a multi-gigabyte CUDA-bundled build that doesn't fit the
+time/disk available there. On a normal machine, `pip install torch` (or the
+explicit CPU-only command in `requirements.txt`) is small and fast, with
+none of that problem. The code follows standard PyTorch Geometric patterns
+and was checked carefully, and the non-`torch` parts (building the graph's
+tensors) were separately verified with plain NumPy, but please run Section
+12 once before presenting and treat any error the same as any other bug in
+this project.
+
+Notebook 2 (`02_graph_construction_and_visualization_ids_2017.ipynb`)
+covers Graph Construction and Graph Feature Extraction only; its samples
+are intentionally small and illustrative, not sized for model training.
+
+**Every plot in both notebooks** now has a legend placed below the axes
+(not overlapping the data) and is saved as a PNG under
+`notebooks/figures/` when the notebook runs, so figures can be pulled
+directly into slides or the written report without a manual screenshot.
+
+**Cross-platform note.** Both notebooks' first code cell installs
+dependencies via `!{sys.executable} -m pip install -r ../requirements.txt`
+— this always resolves to the exact Python running the current kernel, so
+it installs correctly on Windows, macOS, and Linux, and inside any venv or
+conda environment, unlike a hardcoded interpreter path.

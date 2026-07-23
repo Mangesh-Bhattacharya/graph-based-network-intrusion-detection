@@ -1,21 +1,23 @@
 from __future__ import annotations
+from matplotlib.patches import Rectangle
+from matplotlib.lines import Line2D
+
 import math
 import os
 import matplotlib
-
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import networkx as nx
 try:
     # Prefer the IPython-provided helper if available. If running outside
     # of an interactive IPython environment, fall back to the non-interactive
     # Agg backend so figures can be saved without a display.
-    from IPython import get_ipython
+    from IPython.core.getipython import get_ipython
 
     if get_ipython() is None:
         matplotlib.use("Agg")
 except Exception:
     matplotlib.use("Agg")
-
-import matplotlib.pyplot as plt
-import networkx as nx
 
 MALICIOUS_COLOR = "#d62728"   # red
 BENIGN_COLOR = "#4c72b0"      # steel blue
@@ -43,8 +45,7 @@ def _bottom_legend(fig, handles, ncol: int | None = None, extra_bottom: float = 
     its own, with no separate caption needed, once dropped into a slide.
     """
     ncol = ncol or min(len(handles), 4)
-    fig.legend(handles=handles, loc="lower center", ncol=ncol, frameon=False, fontsize=9,
-               bbox_to_anchor=(0.5, 0.0))
+    fig.legend(handles=handles, loc="lower center", ncol=ncol, frameon=False, fontsize=9, bbox_to_anchor=(0.5, 0.0))
     fig.tight_layout(rect=(0, extra_bottom, 1, 1))
 
 def get_readable_subgraph(G: nx.Graph, max_nodes: int = 40) -> nx.Graph:
@@ -89,9 +90,9 @@ def _draw_single_graph(ax, G: nx.Graph, title: str, max_nodes: int = 40, seed: i
 
 def _graph_legend_handles():
     return [
-        plt.Line2D([0], [0], marker="o", color="w", label="Benign", markerfacecolor=BENIGN_COLOR, markersize=10), # noqa: E501
-        plt.Line2D([0], [0], marker="o", color="w", label="Touched an attack flow", markerfacecolor=MALICIOUS_COLOR, markersize=10), # noqa: E501
-        plt.Line2D([0], [0], color=EDGE_COLOR, lw=2, label="Communication (edge)"),
+        Line2D([0], [0], marker="o", color="w", label="Benign", markerfacecolor=BENIGN_COLOR, markersize=10), # noqa: E501
+        Line2D([0], [0], marker="o", color="w", label="Touched an attack flow", markerfacecolor=MALICIOUS_COLOR, markersize=10), # noqa: E501
+        Line2D([0], [0], color=EDGE_COLOR, lw=2, label="Communication (edge)"),
     ]
 
 def plot_graph(
@@ -148,8 +149,7 @@ def plot_feature_distribution(features, column: str, title: str | None = None, s
     ax.set_xlabel(column.replace("_", " ").title())
     ax.set_ylabel("Number of nodes")
     ax.set_title(title or f"Distribution of {column.replace('_', ' ')}")
-    handles = [plt.Rectangle((0, 0), 1, 1, color=BENIGN_COLOR,
-                              label=f"Nodes binned by {column.replace('_', ' ')} (n={len(features)})")]
+    handles = [Rectangle((0, 0), 1, 1, color=BENIGN_COLOR, label=f"Nodes binned by {column.replace('_', ' ')} (n={len(features)})")]
     _bottom_legend(fig, handles, ncol=1)
     _save(fig, save_path)
     return fig
@@ -189,7 +189,7 @@ def plot_degree_distribution(G: nx.Graph, title: str = "Degree Distribution", lo
         legend_label = "Each bar = a range of degree values"
 
     ax.set_title(title)
-    handles = [plt.Line2D([0], [0], marker="o", color="w", label=legend_label, markerfacecolor=BENIGN_COLOR, markersize=8)]
+    handles = [Line2D([0], [0], marker="o", color="w", label=legend_label, markerfacecolor=BENIGN_COLOR, markersize=8)]
     _bottom_legend(fig, handles, ncol=1)
     _save(fig, save_path)
     return fig
@@ -236,7 +236,7 @@ def plot_bar(
         ax.tick_params(axis="x", rotation=30)
     ax.set_title(title)
 
-    handles = [plt.Rectangle((0, 0), 1, 1, color=color, label=legend_label or title)]
+    handles = [Rectangle((0, 0), 1, 1, color=color, label=legend_label or title)]
     _bottom_legend(fig, handles, ncol=1)
     _save(fig, save_path)
     return fig
@@ -262,8 +262,8 @@ def plot_scatter_2d(
     ax.set_ylabel(ylabel)
 
     handles = [
-        plt.Line2D([0], [0], marker="o", color="w", label="Benign", markerfacecolor=BENIGN_COLOR, markersize=10),
-        plt.Line2D([0], [0], marker="o", color="w", label="Touched an attack flow", markerfacecolor=MALICIOUS_COLOR, markersize=10),
+        Line2D([0], [0], marker="o", color="w", label="Benign", markerfacecolor=BENIGN_COLOR, markersize=10),
+        Line2D([0], [0], marker="o", color="w", label="Touched an attack flow", markerfacecolor=MALICIOUS_COLOR, markersize=10),
     ]
     _bottom_legend(fig, handles, ncol=2)
     _save(fig, save_path)
@@ -288,15 +288,16 @@ def plot_model_comparison(results, title: str = "Model comparison", save_path: s
 
     fig, ax = plt.subplots(figsize=figsize)
     for i, (metric, color) in enumerate(zip(metrics, colors)):
-        ax.bar(x + i * width, results[metric].values, width, color=color)
+        bars = ax.bar(x + i * width, results[metric].values, width, color=color)
+        labels = [f"{v*100:.1f}%" for v in results[metric].values]
+        ax.bar_label(bars, labels=labels, padding=2, fontsize=8)
     ax.set_xticks(x + width * (len(metrics) - 1) / 2)
     ax.set_xticklabels(results.index, rotation=20, ha="right")
     ax.set_ylabel("Score")
-    ax.set_ylim(0, 1.05)
-    ax.set_title(title)
+    ax.set_ylim(0, 1.12)
 
     handles = [
-        plt.Rectangle((0, 0), 1, 1, color=color, label=metric.replace("_", " ").upper())
+        Rectangle((0, 0), 1, 1, color=color, label=metric.replace("_", " ").upper())
         for metric, color in zip(metrics, colors)
     ]
     _bottom_legend(fig, handles, ncol=len(metrics))
@@ -316,7 +317,5 @@ if __name__ == "__main__":
     features = compute_all_features(G)
 
     plot_graph(G, title="Sample Communication Graph", save_path="sample_graph.png")
-    plot_feature_distribution(
-        features, "betweenness_centrality", save_path="sample_betweenness_hist.png"
-    )
+    plot_feature_distribution(features, "betweenness_centrality", save_path="sample_betweenness_hist.png")
     print("Saved sample_graph.png and sample_betweenness_hist.png")

@@ -60,7 +60,6 @@ dumping a big accuracy number here; the point of this project was understanding
 
 | Dataset | What it is | Where it's used |
 |---|---|---|
-| **CIC-IDS-2017** | Raw, labeled NetFlow-style logs, one row per flow, five days of captures (benign Monday baseline + DDoS, port scan, web attack, and infiltration days) | `notebooks/02_...ids_2017.ipynb` - we build the graph ourselves from these CSVs |
 | **Kaggle "0.1M-Stratified" graph** | A pre-built graph derived from 100,000 sampled NetFlow records, shipped in three edge-handling variants (plain / aggregated / multi) | `notebooks/01_...kaggle.ipynb` - our main feature-extraction and modeling notebook |
 
 We also looked at CIC-IoT-2023, UNSW-NB15, TON_IoT, and Bot-IoT while scoping the
@@ -74,10 +73,8 @@ approach above.
 
 ```mermaid
 flowchart LR
-    A[Raw flow logs<br/>CIC-IDS-2017 CSV] --> B[graph_construction.py]
     K[Kaggle .graphml<br/>plain / multi / aggregated] --> L[load_kaggle_graph.py]
-    B --> C[Communication graph<br/>nodes = IPs, edges = flows]
-    L --> C
+    L --> C[Communication graph<br/>nodes = IPs, edges = flows]
     C --> D[graph_features.py<br/>degree · closeness · betweenness · PageRank · clustering]
     C --> E[Motif counts<br/>triangles]
     C --> F[Node2Vec embeddings<br/>attack-neighborhood subgraph]
@@ -99,8 +96,6 @@ and show the workaround plus proof that it gives the same answer.
 | Notebook | Covers |
 |---|---|
 | [`01_graph_construction_and_visualization_kaggle.ipynb`](notebooks/01_graph_construction_and_visualization_kaggle.ipynb) | Loading the Kaggle graph variants, degree/closeness/betweenness/PageRank, motif counts + derived clustering coefficient, Node2Vec embeddings, Random Forest / XGBoost models, feature importance |
-| [`02_graph_construction_and_visualization_ids_2017.ipynb`](notebooks/02_graph_construction_and_visualization_ids_2017.ipynb) | Building a communication graph from raw CIC-IDS-2017 flow logs from scratch, across a benign day and four attack days |
-| `01_graph_construction_and_visualization.ipynb` | Retired - kept for history, see its first cell for why we split it into the two above |
 
 ## Source
 
@@ -118,8 +113,7 @@ and show the workaround plus proof that it gives the same answer.
 ```
 graph-based-network-intrusion-detection/
 ├── data/
-│   ├── cic-ids-2017/GeneratedLabelledFlows/   # raw flow-log CSVs, one file per capture day
-│   └── kaggle/                                # pre-built graphs (plain / multi / aggregated .graphml)
+│   └── kaggle/     # pre-built graphs (plain / multi / aggregated .graphml)
 ├── src/
 │   ├── graph_construction.py
 │   ├── graph_features.py
@@ -127,8 +121,6 @@ graph-based-network-intrusion-detection/
 │   └── load_kaggle_graph.py
 ├── notebooks/
 │   ├── 01_graph_construction_and_visualization_kaggle.ipynb
-│   ├── 02_graph_construction_and_visualization_ids_2017.ipynb
-│   └── 01_graph_construction_and_visualization.ipynb   # retired
 ├── requirements.txt
 └── README.md
 ```

@@ -15,6 +15,19 @@ more interesting than the accuracy number.
 
 ---
 
+## System Topology
+
+This diagram illustrates the end‑to‑end workflow of our Graph‑Based Network Intrusion Detection System (NIDS):
+
+**Captured Network Traffic → Graph Construction → Graph Features → ML/GNN Classification → Filtered Output**
+
+![Network Intrusion Detection Topology](figures/topology.png)
+
+### Explanation:
+The topology shows how raw flow logs are transformed into a communication graph, enriched with structural features, and classified using ML/GNN‑inspired embeddings to detect malicious behavior.
+
+---
+
 ## Why we built this
 
 Most intrusion detection tutorials treat each network flow as a row in a table and

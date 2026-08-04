@@ -175,8 +175,7 @@ A couple of things worth knowing before you run it:
   needs a GPU. If the default `torch` wheel is a large download on your connection,
   install the CPU-only build directly: `pip install torch --index-url https://download.pytorch.org/whl/cpu`.
 - The GNN models mentioned in the Methods section below (GCN, GraphSAGE, GAT) are
-  listed as part of the original project scope, but we ended up not implementing them
-  - see [What we deliberately left out](#what-we-deliberately-left-out).
+  listed as part of the original project scope, but we ended up not implementing them.
 
 ---
 

@@ -8,7 +8,7 @@
 > Final project for our Complex Networks course. Four of us spent the semester asking
 > a simple question: if you stop looking at network traffic as a spreadsheet of
 > isolated flows and start looking at it as a graph, does an attacker's shape in
-> that graph give them away?
+> that graph gives them away?
 
 Short answer: yes, for a meaningful chunk of them - and the "why" turned out to be
 more interesting than the accuracy number.
@@ -62,7 +62,7 @@ strong enough to actually help a classifier.
 | Do graph features actually help detection? | Random Forest / XGBoost hit **0.92-0.96 accuracy, 0.93-0.96 ROC-AUC** vs. a 0.50 ROC-AUC majority-class baseline |
 | Which features mattered most? | Node2Vec embedding dimensions - ahead of every hand-built centrality feature |
 
-The full reasoning, numbers, and sanity checks for each of these live in the
+The full reasoning, numbers, and sanity check for each of these live in the
 notebooks - see [Notebooks](#notebooks) below. We're intentionally not just
 dumping a big accuracy number here; the point of this project was understanding
 *why* the graph looks the way it does before trusting any model built on top of it.
@@ -86,15 +86,16 @@ approach above.
 
 ```mermaid
 flowchart LR
-    K[Kaggle .graphml<br/>plain / multi / aggregated] --> L[load_kaggle_graph.py]
-    L --> C[Communication graph<br/>nodes = IPs, edges = flows]
+    K[Kaggle .graphml<br/>plain · multi · aggregated] --> L[load_kaggle_graph.py]
+    L --> C[Communication Graph<br/>nodes = IPs · edges = flows]
     C --> D[graph_features.py<br/>degree · closeness · betweenness · PageRank · clustering]
-    C --> E[Motif counts<br/>triangles]
-    C --> F[Node2Vec embeddings<br/>attack-neighborhood subgraph]
-    D --> G[Random Forest / XGBoost]
+    C --> E[Motif Counts<br/>triangles]
+    C --> F[Node2Vec Embeddings<br/>attack-neighborhood subgraph]
+    D --> G[Random Forest · XGBoost]
     E --> G
     F --> G
     G --> H[Accuracy · F1 · ROC-AUC]
+
 ```
 
 Every one of those arrows is a real, runnable step in the notebooks - nothing here
@@ -126,16 +127,23 @@ and show the workaround plus proof that it gives the same answer.
 ```
 graph-based-network-intrusion-detection/
 ├── data/
-│   └── kaggle/     # pre-built graphs (plain / multi / aggregated .graphml)
+│   └── kaggle/                     # Pre-built graphs (.graphml) - plain, multi, aggregated
+│
 ├── src/
-│   ├── graph_construction.py
-│   ├── graph_features.py
-│   ├── visualize.py
-│   └── load_kaggle_graph.py
+│   ├── graph_construction.py       # Flow logs → communication graph
+│   ├── graph_features.py           # Graph metrics (centrality, PageRank, clustering)
+│   ├── visualize.py                # Graph sampling + feature visualization
+│   └── load_kaggle_graph.py        # Load and compare Kaggle graph variants
+│
 ├── notebooks/
-│   ├── 01_graph_construction_and_visualization_kaggle.ipynb
-├── requirements.txt
-└── README.md
+│   └── 01_graph_construction_and_visualization_kaggle.ipynb
+│
+├── topology/
+│   └── NIDS_Top.png                # NIDS topology diagram (used in README)
+│
+├── requirements.txt                # Python dependencies
+└── README.md                       # Project overview and documentation
+
 ```
 
 ---

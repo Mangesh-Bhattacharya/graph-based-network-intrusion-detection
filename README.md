@@ -1,30 +1,14 @@
 # Network Intrusion Detection Through Graph Structure
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](requirements.txt)
-[![NetworkX](https://img.shields.io/badge/graphs-networkx-orange)](https://networkx.org/)
-[![Status](https://img.shields.io/badge/status-course%20project%20%E2%80%93%20complete-brightgreen)]()
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/Mangesh-Bhattacharya/graph-based-network-intrusion-detection/blob/main/LICENSE) [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://github.com/Mangesh-Bhattacharya/graph-based-network-intrusion-detection/blob/main/requirements.txt) [![NetworkX](https://img.shields.io/badge/graphs-networkx-orange)](https://networkx.org/) [![Status](https://img.shields.io/badge/status-course%20project%20%E2%80%93%20complete-brightgreen)](https://github.com/Mangesh-Bhattacharya/graph-based-network-intrusion-detection/blob/main)
 
 > Final project for our Complex Networks course. Four of us spent the semester asking
 > a simple question: if you stop looking at network traffic as a spreadsheet of
 > isolated flows and start looking at it as a graph, does an attacker's shape in
-> that graph gives them away?
+> that graph give them away?
 
 Short answer: yes, for a meaningful chunk of them - and the "why" turned out to be
 more interesting than the accuracy number.
-
----
-
-## System Topology
-
-This diagram illustrates the end‑to‑end workflow of our Graph‑Based Network Intrusion Detection System (NIDS):
-
-**Captured Network Traffic → Graph Construction → Graph Features → ML/GNN Classification → Filtered Output**
-
-![Network Intrusion Detection Topology](topology/NIDS_Top.png)
-
-### Explanation:
-The topology shows how raw flow logs are transformed into a communication graph, enriched with structural features, and classified using ML/GNN‑inspired embeddings to detect malicious behavior.
 
 ---
 
@@ -48,31 +32,57 @@ Then we asked what centrality, motif, and embedding features can tell us about
 attacker behavior that raw flow statistics can't - and whether that signal is
 strong enough to actually help a classifier.
 
+### The concept, visually
+
+![Network Intrusion Detection Topology](topology/nids_topology_diagram.svg)
+
+This diagram is the textbook version of the idea above: a NIDS sits inline between
+the LAN and the internet, captures traffic, represents it as a graph, and uses a
+graph neural network (GNN) to decide what to let through. It's the concept that
+motivated the whole project - traffic-as-a-graph instead of traffic-as-a-spreadsheet
+- and it's worth including because it explains *why* graphs are the right lens here:
+structural position in a communication graph (who a node talks to, how central it is,
+whether it clusters with other suspicious nodes) carries information that
+per-flow statistics alone don't.
+
+It is **not** a picture of what we actually built, and we want to be upfront about
+that rather than let the diagram overstate our scope:
+
+- It shows **live, inline filtering** at the router. Our pipeline is **offline**:
+  we build a graph from a flow-log snapshot (or a pre-built Kaggle graph), extract
+  features, and classify after the fact - see [How the graph gets built](#how-the-graph-gets-built).
+- It shows a **GNN** doing the classification. We used **Node2Vec embeddings feeding
+  Random Forest / XGBoost** instead; GCN/GraphSAGE/GAT were part of the original plan
+  but cut for practical reasons - see [What we deliberately left out](#what-we-deliberately-left-out).
+
+Think of this image as the "north star" architecture and the flowchart later in this
+README as the "what we actually shipped" version.
+
 ---
 
 ## What we found (the short version)
 
-| Question | Answer |
-|---|---|
-| Is the network graph hub-dominated? | Yes - one node touches ~30% of all edges; 95.8% of nodes have degree exactly 1 |
-| Do attackers hide on the busiest nodes? | No. The top 5 hubs by degree touch **zero** attack-labeled edges |
-| Are triangles (3-way mutual connections) common? | Rare - only 47 in a 41,073-node graph, touching 0.13% of nodes |
-| Does `nx.clustering()` run on a graph this size? | Not in any reasonable time - we derive it from triangle counts instead (verified identical) |
-| Does Node2Vec run on the full graph? | No - same mega-hub problem. We scope it to the 962-node neighborhood around attack activity |
-| Do graph features actually help detection? | Random Forest / XGBoost hit **0.92-0.96 accuracy, 0.93-0.96 ROC-AUC** vs. a 0.50 ROC-AUC majority-class baseline |
-| Which features mattered most? | Node2Vec embedding dimensions - ahead of every hand-built centrality feature |
+| Question                                         | Answer                                                                                                           |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Is the network graph hub-dominated?              | Yes - one node touches ~30% of all edges; 95.8% of nodes have degree exactly 1                                   |
+| Do attackers hide on the busiest nodes?          | No. The top 5 hubs by degree touch **zero** attack-labeled edges                                                 |
+| Are triangles (3-way mutual connections) common? | Rare - only 47 in a 41,073-node graph, touching 0.13% of nodes                                                   |
+| Does `nx.clustering()` run on a graph this size? | Not in any reasonable time - we derive it from triangle counts instead (verified identical)                      |
+| Does Node2Vec run on the full graph?             | No - same mega-hub problem. We scope it to the 962-node neighborhood around attack activity                      |
+| Do graph features actually help detection?       | Random Forest / XGBoost hit **0.92-0.96 accuracy, 0.93-0.96 ROC-AUC** vs. a 0.50 ROC-AUC majority-class baseline |
+| Which features mattered most?                    | Node2Vec embedding dimensions - ahead of every hand-built centrality feature                                     |
 
-The full reasoning, numbers, and sanity check for each of these live in the
+The full reasoning, numbers, and sanity checks for each of these live in the
 notebooks - see [Notebooks](#notebooks) below. We're intentionally not just
-dumping a big accuracy number here; the point of this project was understanding
-*why* the graph looks the way it does before trusting any model built on top of it.
+dumping a big accuracy number here; the point of this project was understanding *why*
+the graph looks the way it does before trusting any model built on top of it.
 
 ---
 
 ## Datasets
 
-| Dataset | What it is | Where it's used |
-|---|---|---|
+| Dataset                            | What it is                                                                                                                           | Where it's used                                                                    |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | **Kaggle "0.1M-Stratified" graph** | A pre-built graph derived from 100,000 sampled NetFlow records, shipped in three edge-handling variants (plain / aggregated / multi) | `notebooks/01_...kaggle.ipynb` - our main feature-extraction and modeling notebook |
 
 We also looked at CIC-IoT-2023, UNSW-NB15, TON_IoT, and Bot-IoT while scoping the
@@ -86,16 +96,15 @@ approach above.
 
 ```mermaid
 flowchart LR
-    K[Kaggle .graphml<br/>plain · multi · aggregated] --> L[load_kaggle_graph.py]
-    L --> C[Communication Graph<br/>nodes = IPs · edges = flows]
+    K[Kaggle .graphml<br/>plain / multi / aggregated] --> L[load_kaggle_graph.py]
+    L --> C[Communication graph<br/>nodes = IPs, edges = flows]
     C --> D[graph_features.py<br/>degree · closeness · betweenness · PageRank · clustering]
-    C --> E[Motif Counts<br/>triangles]
-    C --> F[Node2Vec Embeddings<br/>attack-neighborhood subgraph]
-    D --> G[Random Forest · XGBoost]
+    C --> E[Motif counts<br/>triangles]
+    C --> F[Node2Vec embeddings<br/>attack-neighborhood subgraph]
+    D --> G[Random Forest / XGBoost]
     E --> G
     F --> G
     G --> H[Accuracy · F1 · ROC-AUC]
-
 ```
 
 Every one of those arrows is a real, runnable step in the notebooks - nothing here
@@ -107,18 +116,18 @@ and show the workaround plus proof that it gives the same answer.
 
 ## Notebooks
 
-| Notebook | Covers |
-|---|---|
-| [`01_graph_construction_and_visualization_kaggle.ipynb`](notebooks/01_graph_construction_and_visualization_kaggle.ipynb) | Loading the Kaggle graph variants, degree/closeness/betweenness/PageRank, motif counts + derived clustering coefficient, Node2Vec embeddings, Random Forest / XGBoost models, feature importance |
+| Notebook                                                                                                                                                                                                             | Covers                                                                                                                                                                                           |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`01_graph_construction_and_visualization_kaggle.ipynb`](https://github.com/Mangesh-Bhattacharya/graph-based-network-intrusion-detection/blob/main/notebooks/01_graph_construction_and_visualization_kaggle.ipynb) | Loading the Kaggle graph variants, degree/closeness/betweenness/PageRank, motif counts + derived clustering coefficient, Node2Vec embeddings, Random Forest / XGBoost models, feature importance |
 
 ## Source
 
-| Module | Responsibility |
-|---|---|
+| Module                      | Responsibility                                                                                                                                                  |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/graph_construction.py` | Flow logs → communication graph; chunked label-aware sampling so we don't accidentally build an "attack graph" out of zero attacks; time-windowed aggregation |
-| `src/graph_features.py` | Degree/closeness/betweenness centrality, PageRank, clustering coefficient, plus verification checks (`sum(degrees) == 2|E|`,`sum(PageRank) ≈ 1`) |
-| `src/load_kaggle_graph.py` | Loads and compares the three pre-built Kaggle `.graphml` variants |
-| `src/visualize.py` | Readable graph plots that auto-sample large graphs instead of rendering an unreadable hairball, plus feature-distribution histograms |
+| `src/graph_features.py`     | Degree/closeness/betweenness centrality, PageRank, clustering coefficient, plus verification checks (`sum(degrees) == 2 * edges`, etc.)                        |
+| `src/load_kaggle_graph.py`  | Loads and compares the three pre-built Kaggle `.graphml` variants                                                                                               |
+| `src/visualize.py`          | Readable graph plots that auto-sample large graphs instead of rendering an unreadable hairball, plus feature-distribution histograms                          |
 
 ---
 
@@ -126,43 +135,38 @@ and show the workaround plus proof that it gives the same answer.
 
 ```
 graph-based-network-intrusion-detection/
+├── assets/
+│   └── nids_topology_diagram.png   # conceptual NIDS/graph/GNN architecture (see "The concept, visually")
 ├── data/
-│   └── kaggle/                     # Pre-built graphs (.graphml) - plain, multi, aggregated
-│
+│   └── kaggle/     # pre-built graphs (plain / multi / aggregated .graphml)
 ├── src/
-│   ├── graph_construction.py       # Flow logs → communication graph
-│   ├── graph_features.py           # Graph metrics (centrality, PageRank, clustering)
-│   ├── visualize.py                # Graph sampling + feature visualization
-│   └── load_kaggle_graph.py        # Load and compare Kaggle graph variants
-│
+│   ├── graph_construction.py
+│   ├── graph_features.py
+│   ├── visualize.py
+│   └── load_kaggle_graph.py
 ├── notebooks/
-│   └── 01_graph_construction_and_visualization_kaggle.ipynb
-│
-├── topology/
-│   └── NIDS_Top.png                # NIDS topology diagram (used in README)
-│
-├── requirements.txt                # Python dependencies
-└── README.md                       # Project overview and documentation
-
+│   ├── 01_graph_construction_and_visualization_kaggle.ipynb
+├── requirements.txt
+└── README.md
 ```
 
 ---
 
 ## Getting it running
 
-```bash
+```
 git clone https://github.com/Mangesh-Bhattacharya/graph-based-network-intrusion-detection.git
 ```
 
-```bash
+```
 cd graph-based-network-intrusion-detection
 ```
 
-```bash
+```
 pip install -r requirements.txt
 ```
 
-```bash
+```
 jupyter notebook notebooks/01_graph_construction_and_visualization_kaggle.ipynb
 ```
 
@@ -175,7 +179,8 @@ A couple of things worth knowing before you run it:
   needs a GPU. If the default `torch` wheel is a large download on your connection,
   install the CPU-only build directly: `pip install torch --index-url https://download.pytorch.org/whl/cpu`.
 - The GNN models mentioned in the Methods section below (GCN, GraphSAGE, GAT) are
-  listed as part of the original project scope, but we ended up not implementing them.
+  listed as part of the original project scope, but we ended up not implementing them
+  - see [What we deliberately left out](#what-we-deliberately-left-out).
 
 ---
 
@@ -229,16 +234,16 @@ Built by a team of four for our Complex Networks course:
 
 ## Project timeline
 
-| Weeks | Focus |
-|---|---|
-| 1-2 | Dataset selection and preprocessing |
-| 3-4 | Graph construction and feature extraction |
-| 5-6 | ML/GNN model training |
-| 7 | Visualization and analysis |
-| 8 | Final report and presentation |
+| Weeks | Focus                                     |
+| ------ | ------------------------------------------ |
+| 1-2   | Dataset selection and preprocessing       |
+| 3-4   | Graph construction and feature extraction |
+| 5-6   | ML/GNN model training                     |
+| 7     | Visualization and analysis                |
+| 8     | Final report and presentation             |
 
 ---
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/Mangesh-Bhattacharya/graph-based-network-intrusion-detection/blob/main/LICENSE)

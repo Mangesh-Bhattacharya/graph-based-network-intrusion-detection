@@ -21,7 +21,7 @@ This diagram illustrates the end‑to‑end workflow of our Graph‑Based Networ
 
 **Captured Network Traffic → Graph Construction → Graph Features → ML/GNN Classification → Filtered Output**
 
-![Network Intrusion Detection Topology](topology/nids.png)
+![Network Intrusion Detection Topology](topology/NIDS_Top.png)
 
 ### Explanation:
 The topology shows how raw flow logs are transformed into a communication graph, enriched with structural features, and classified using ML/GNN‑inspired embeddings to detect malicious behavior.
